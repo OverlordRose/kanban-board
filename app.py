@@ -38,10 +38,14 @@ def index():
 # Urgency calculation
 # -----------------------------
 def compute_urgency(due_date_str):
-    if not due_date_str:
+    if not due_date_str or due_date_str.strip() == "":
         return None
 
-    due = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+    try:
+        due = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return None  # invalid date format
+
     today = date.today()
     diff = (due - today).days
 
@@ -53,7 +57,6 @@ def compute_urgency(due_date_str):
         return "soon"
     else:
         return None
-
 
 # -----------------------------
 # Board route
