@@ -87,21 +87,26 @@ def board():
 def add_task():
     title = request.form["title"]
     description = request.form.get("description")
-    priority = request.form.get("priority","normal")
+    priority = request.form.get("priority", "normal")
     due_date = request.form.get("due_date")
 
     print("SESSION:", session)
     print("USER ID:", session.get("user_id"))
 
+    # Safely get user_id
+    user_id = session.get("user_id")
 
+    # TEMP: allow adding tasks without login (Render)
+    if not user_id:
+        user_id = None
 
     supabase.table("tasks").insert({
         "title": title,
-        "description" : description,
+        "description": description,
         "status": "todo",
         "priority": priority,
         "due_date": due_date,
-        "user_id": session["user_id"]
+        "user_id": user_id   # ✔ use the safe fallback
     }).execute()
 
     return redirect("/board")
