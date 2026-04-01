@@ -112,8 +112,12 @@ def add_task():
     description = request.form.get("description")
     priority = request.form.get("priority", "normal")
     due_date = request.form.get("due_date")
+    print("SESSION USER ID:", session.get("user_id"))
 
     user_id = session.get("user_id")
+    if not user_id:
+        print("ERROR: No user_id in session")
+        return redirect("/login")
 
     supabase.table("tasks").insert({
         "title": title,
