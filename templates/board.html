@@ -35,7 +35,7 @@
         <h2>To Do</h2>
 
         {% for task in tasks.todo %}
-            <div class="task-card" draggable="true" data-id="{{ task.id }}">
+            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-due-date="{{ task.due_date }}">
                 <div class="task-header">
                     <span class="task-title">{{ task.title }}</span>
 
@@ -72,7 +72,7 @@
         <h2>In Progress</h2>
 
         {% for task in tasks.in_progress %}
-            <div class="task-card" draggable="true" data-id="{{ task.id }}">
+            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-due-date="{{ task.due_date }}">
                 <div class="task-header">
                     <span class="task-title">{{ task.title }}</span>
 
@@ -109,7 +109,7 @@
         <h2>In Review</h2>
 
         {% for task in tasks.in_review %}
-            <div class="task-card" draggable="true" data-id="{{ task.id }}">
+            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-due-date="{{ task.due_date }}">
                 <div class="task-header">
                     <span class="task-title">{{ task.title }}</span>
 
@@ -145,7 +145,7 @@
          ondrop="dropTask(event)">
         <h2>Done</h2>
         {% for task in tasks.done %}
-            <div class="task-card" draggable="true" data-id="{{ task.id }}">
+            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-due-date="{{ task.due_date }}">
                 <div class="task-header">
                     <span class="task-title">{{ task.title }}</span>
 
@@ -179,13 +179,21 @@
 
 
 <!--hidden form for editing-->
-<div id="editModal" style="display:none;">
-    <form id="editForm" action="/edit_task" method="POST">
-        <input type="hidden" name="id" id="edit-id">
-        <input type="text" name="title" id="edit-title" placeholder="Task title" required>
-        <button type="submit">Update Task</button>
-    </form>
-</div>
+<form action="/edit_task" method="post">
+    <input type="hidden" name="id" id="edit-id">
+
+    <label>Title</label>
+    <input type="text" name="title" id="edit-title" required>
+
+    <label>Description</label>
+    <textarea name="description" id="edit-description"></textarea>
+
+    <label>Due Date</label>
+    <input type="date" name="due_date" id="edit-due-date">
+
+    <button type="submit">Update Task</button>
+</form>
+
 
 <!--delete form-->
 <form id="deleteForm" action="/delete_task" method="POST" style="display:none;">
@@ -260,17 +268,33 @@ function dropTask(event) {
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent triggering drag
+            event.stopPropagation(); // Prevent triggering drag
+
             const taskId = this.dataset.id;
             const taskCard = this.closest('.task-card');
-            const taskTitle = taskCard.querySelector('span').textContent;
 
+            // Title
+            const taskTitle = taskCard.querySelector('.task-title').textContent;
 
+            // Description (may not exist)
+            const taskDescription = taskCard.querySelector('.task-desc')
+                ? taskCard.querySelector('.task-desc').textContent
+                : "";
+
+            // Due date (stored in data attribute)
+            const taskDueDate = taskCard.dataset.dueDate || "";
+
+            // Fill the edit form
             document.getElementById('edit-id').value = taskId;
             document.getElementById('edit-title').value = taskTitle;
+            document.getElementById('edit-description').value = taskDescription;
+            document.getElementById('edit-due-date').value = taskDueDate;
+
+            // Show the edit form or modal
             document.getElementById('editModal').style.display = 'block';
         });
     });
+});
 
                  //DELETE BUTTON LOGIC
     document.querySelectorAll('.delete-btn').forEach(button => {

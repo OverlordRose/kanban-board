@@ -162,16 +162,20 @@ def update_status():
 def edit_task():
     task_id = request.form.get("id")
     new_title = request.form.get("title")
+    new_description = request.form.get("description")
+    new_due_date = request.form.get("due_date") or None
 
-    # Get user_id from Flask session
     user_id = session.get("user_id")
     if not user_id:
         print("ERROR: No session user_id")
         return redirect("/login")
 
-    # Update only if the task belongs to this user (RLS requirement)
     supabase.table("tasks") \
-        .update({"title": new_title}) \
+        .update({
+            "title": new_title,
+            "description": new_description,
+            "due_date": new_due_date
+        }) \
         .eq("id", task_id) \
         .eq("user_id", user_id) \
         .execute()
