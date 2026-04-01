@@ -12,7 +12,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 
 app = Flask(__name__)
-app.secret_key = "a9f8b1c2d3e4f5g6h7i8j9k0"
+app.secret_key = os.getenv("SECRET_KEY")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -113,6 +113,7 @@ def board():
 @app.post("/add_task")
 def add_task():
     supabase.auth.refresh_session()
+    print("USER ON POST:", supabase.auth.get_user())
 
     title = request.form.get("title")
     description = request.form.get("description")
