@@ -22,12 +22,10 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.before_request
 def create_guest_session():
     if not session.get("user_id"):
-        try:
-            auth_session = supabase.auth.sign_in_anonymously()
-            session["user_id"] = auth_session.user.id
-        except Exception:
-            print("Anonymous sign‑in failed")
-            return redirect("/login")
+        # Always generate a stable local UUID for this guest
+        user_id = str(uuid4())
+        session["user_id"] = user_id
+        print("Created guest session:", user_id)
         
 # -----------------------------
 # Home → redirect to board
