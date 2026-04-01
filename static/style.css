@@ -881,3 +881,8 @@ form[action="/add_task"] select {
     justify-content: space-between;
     margin-top: 15px;
 }
+
+#editForm label {
+    display: block;
+    margin-top: 10px;
+}
