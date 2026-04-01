@@ -95,6 +95,7 @@ def board():
         "total": len(rows),
         "completed": len(tasks["done"]),
         "overdue": len([r for r in rows if r.get("urgency") == "overdue"]),
+        "due_today": len([r for r in rows if r.get("urgency") == "today"]),
         "due_soon": len([r for r in rows if r.get("urgency") == "soon"]),
     }
 
