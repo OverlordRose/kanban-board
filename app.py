@@ -1,17 +1,20 @@
-
+import os
 from flask import Flask, render_template, request, redirect, session
 from supabase import create_client, Client
 from datetime import date, datetime
 from uuid import uuid4
+from dotenv import load_dotenv
 
-SUPABASE_URL = "https://wnieylhcqjgjsrbdbhek.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduaWV5bGhjcWpnanNyYmRiaGVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MDQ2NzksImV4cCI6MjA5MDQ4MDY3OX0.YOTxUR6L6qNMHURhAepyGPA4VKOq7_WVGPn551hWL94"
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
 
 app = Flask(__name__)
-app.secret_key = "super-secret-key-change-this"
+app.secret_key = "a9f8b1c2d3e4f5g6h7i8j9k0"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
 
 # -----------------------------
 # Create guest session safely
@@ -23,10 +26,9 @@ def create_guest_session():
             auth_session = supabase.auth.sign_in_anonymously()
             session["user_id"] = auth_session.user.id
         except Exception:
-            # Fallback: generate a local UUID so RLS still passes
-            session["user_id"] = str(uuid4())
-
-
+            print("Anonymous sign‑in failed")
+            return redirect("/login")
+        
 # -----------------------------
 # Home → redirect to board
 # -----------------------------
@@ -64,18 +66,21 @@ def compute_urgency(due_date_str):
 # -----------------------------
 @app.route("/board")
 def board():
-    user_id = session.get("user_id")
+    # Get the authenticated Supabase user
+    user = supabase.auth.get_user()
+    if not user or not user.user:
+        print("ERROR: No Supabase user authenticated")
+        return redirect("/login")
 
-    # If session is missing, load all tasks instead of crashing
-    if not user_id:
-        response = supabase.table("tasks").select("*").execute()
-    else:
-        response = (
-            supabase.table("tasks")
-            .select("*")
-            .eq("user_id", user_id)
-            .execute()
-        )
+    user_id = user.user.id
+
+    # Fetch only this user's tasks (RLS requires this)
+    response = (
+        supabase.table("tasks")
+        .select("*")
+        .eq("user_id", user_id)
+        .execute()
+    )
 
     rows = response.data or []
 
@@ -102,7 +107,6 @@ def board():
 
     return render_template("board.html", tasks=tasks, stats=stats)
 
-
 # -----------------------------
 # Add task
 # -----------------------------
@@ -113,10 +117,12 @@ def add_task():
     priority = request.form.get("priority", "normal")
     due_date = request.form.get("due_date") or None
 
-    user_id = session.get("user_id")
-    if not user_id:
-        print("ERROR: No user_id in session")
+    user = supabase.auth.get_user()
+    if not user or not user.user:
+        print("ERROR: No supabase user authenticated")
         return redirect("/login")
+    
+    user_id = user.user.id
 
     supabase.table("tasks").insert({
         "title": title,
@@ -139,10 +145,14 @@ def update_status():
     task_id = data.get("id")
     new_status = data.get("status")
 
-    user_id = session.get("user_id")
-    if not user_id:
-        return {"error": "No user session"}, 400
+    # Get Supabase authenticated user
+    user = supabase.auth.get_user()
+    if not user or not user.user:
+        return {"error": "No Supabase user authenticated"}, 400
 
+    user_id = user.user.id
+
+    # Update only if the task belongs to this user (RLS requirement)
     supabase.table("tasks") \
         .update({"status": new_status}) \
         .eq("id", task_id) \
@@ -160,10 +170,15 @@ def edit_task():
     task_id = request.form.get("id")
     new_title = request.form.get("title")
 
-    user_id = session.get("user_id")
-    if not user_id:
-        return redirect("/board")
+    # Get Supabase authenticated user
+    user = supabase.auth.get_user()
+    if not user or not user.user:
+        print("ERROR: No Supabase user authenticated")
+        return redirect("/login")
 
+    user_id = user.user.id
+
+    # Update only if the task belongs to this user (RLS requirement)
     supabase.table("tasks") \
         .update({"title": new_title}) \
         .eq("id", task_id) \
@@ -172,7 +187,6 @@ def edit_task():
 
     return redirect("/board")
 
-
 # -----------------------------
 # Delete task
 # -----------------------------
@@ -180,10 +194,15 @@ def edit_task():
 def delete_task():
     task_id = request.form.get("id", "").strip()
 
-    user_id = session.get("user_id")
-    if not user_id:
-        return redirect("/board")
+    # Get Supabase authenticated user
+    user = supabase.auth.get_user()
+    if not user or not user.user:
+        print("ERROR: No Supabase user authenticated")
+        return redirect("/login")
 
+    user_id = user.user.id
+
+    # Delete only if the task belongs to this user (RLS requirement)
     supabase.table("tasks") \
         .delete() \
         .eq("id", task_id) \
