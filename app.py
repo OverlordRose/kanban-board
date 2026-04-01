@@ -111,8 +111,7 @@ def add_task():
     title = request.form.get("title")
     description = request.form.get("description")
     priority = request.form.get("priority", "normal")
-    due_date = request.form.get("due_date")
-    print("SESSION USER ID:", session.get("user_id"))
+    due_date = request.form.get("due_date") or None
 
     user_id = session.get("user_id")
     if not user_id:
