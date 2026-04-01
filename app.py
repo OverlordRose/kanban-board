@@ -115,10 +115,6 @@ def add_task():
 
     user_id = session.get("user_id")
 
-    # If session failed, still allow task creation
-    if not user_id:
-        user_id = None
-
     supabase.table("tasks").insert({
         "title": title,
         "description": description,
