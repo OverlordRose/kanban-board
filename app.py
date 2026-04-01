@@ -127,6 +127,15 @@ def add_task():
     
     user_id = user.user.id
 
+    print("INSERT PAYLOAD:", {
+    "title": title,
+    "description": description,
+    "status": "todo",
+    "priority": priority,
+    "due_date": due_date,
+    "user_id": user_id
+})
+
     supabase.table("tasks").insert({
         "title": title,
         "description": description,
