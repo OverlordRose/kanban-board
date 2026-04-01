@@ -7,11 +7,14 @@ SUPABASE_URL = "https://wnieylhcqjgjsrbdbhek.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduaWV5bGhjcWpnanNyYmRiaGVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MDQ2NzksImV4cCI6MjA5MDQ4MDY3OX0.YOTxUR6L6qNMHURhAepyGPA4VKOq7_WVGPn551hWL94"
 
 app = Flask(__name__)
-app.secret_key = "your-secret-key"  # Replace with a real secret key
+app.secret_key = "your-secret-key"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Create guest session if not already created
+
+# -----------------------------
+# Create guest session
+# -----------------------------
 @app.before_request
 def create_guest_session():
     if "user_id" not in session:
@@ -19,11 +22,17 @@ def create_guest_session():
         session["user_id"] = auth_session.user.id
 
 
+# -----------------------------
+# Home → redirect to board
+# -----------------------------
 @app.route("/")
 def index():
     return redirect("/board")
 
 
+# -----------------------------
+# Urgency calculation
+# -----------------------------
 def compute_urgency(due_date_str):
     if not due_date_str:
         return None
@@ -41,12 +50,14 @@ def compute_urgency(due_date_str):
     else:
         return None
 
+
+# -----------------------------
+# Board route
+# -----------------------------
 @app.route("/board")
 def board():
-    # Safely get the user_id from the session
     user_id = session.get("user_id")
 
-    # If no user is logged in (like on Render), load all tasks
     if not user_id:
         response = supabase.table("tasks").select("*").execute()
     else:
@@ -59,11 +70,11 @@ def board():
 
     rows = response.data or []
 
-    # Add urgency to each row BEFORE grouping
+    # Add urgency
     for r in rows:
         r["urgency"] = compute_urgency(r.get("due_date"))
 
-    # Group tasks by status
+    # Group tasks
     tasks = {
         "todo": [r for r in rows if r["status"] == "todo"],
         "in_progress": [r for r in rows if r["status"] == "in_progress"],
@@ -71,7 +82,7 @@ def board():
         "done": [r for r in rows if r["status"] == "done"],
     }
 
-    # Stats for the stats bar
+    # Stats
     stats = {
         "total": len(rows),
         "completed": len(tasks["done"]),
@@ -82,7 +93,9 @@ def board():
     return render_template("board.html", tasks=tasks, stats=stats)
 
 
-
+# -----------------------------
+# Add task
+# -----------------------------
 @app.post("/add_task")
 def add_task():
     title = request.form["title"]
@@ -90,15 +103,7 @@ def add_task():
     priority = request.form.get("priority", "normal")
     due_date = request.form.get("due_date")
 
-    print("SESSION:", session)
-    print("USER ID:", session.get("user_id"))
-
-    # Safely get user_id
     user_id = session.get("user_id")
-
-    # TEMP: allow adding tasks without login (Render)
-    if not user_id:
-        user_id = None
 
     supabase.table("tasks").insert({
         "title": title,
@@ -106,12 +111,15 @@ def add_task():
         "status": "todo",
         "priority": priority,
         "due_date": due_date,
-        "user_id": user_id   # ✔ use the safe fallback
+        "user_id": user_id
     }).execute()
 
     return redirect("/board")
 
 
+# -----------------------------
+# Update status
+# -----------------------------
 @app.post("/update_status")
 def update_status():
     data = request.get_json()
@@ -119,13 +127,17 @@ def update_status():
     new_status = data["status"]
 
     supabase.table("tasks") \
-    .update({"status": new_status}) \
-    .eq("id", task_id) \
-    .eq("user_id", session["user_id"]) \
-    .execute()
+        .update({"status": new_status}) \
+        .eq("id", task_id) \
+        .eq("user_id", session["user_id"]) \
+        .execute()
 
     return {"success": True}
 
+
+# -----------------------------
+# Edit task
+# -----------------------------
 @app.post("/edit_task")
 def edit_task():
     task_id = request.form["id"]
@@ -139,23 +151,25 @@ def edit_task():
 
     return redirect("/board")
 
+
+# -----------------------------
+# Delete task
+# -----------------------------
 @app.post("/delete_task")
 def delete_task():
-    print("DELETE ROUTE HIT")
-    print("FORM DATA:", request.form)
-
     task_id = request.form["id"].strip()
 
-    result = supabase.table("tasks") \
+    supabase.table("tasks") \
         .delete() \
         .eq("id", task_id) \
         .eq("user_id", session["user_id"]) \
         .execute()
 
-    print("DELETE RESULT:", result)
-
     return redirect("/board")
 
 
+# -----------------------------
+# Run app
+# -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
