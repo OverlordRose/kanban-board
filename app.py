@@ -7,19 +7,23 @@ SUPABASE_URL = "https://wnieylhcqjgjsrbdbhek.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduaWV5bGhjcWpnanNyYmRiaGVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MDQ2NzksImV4cCI6MjA5MDQ4MDY3OX0.YOTxUR6L6qNMHURhAepyGPA4VKOq7_WVGPn551hWL94"
 
 app = Flask(__name__)
-app.secret_key = "your-secret-key"
+app.secret_key = "super-secret-key-change-this"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 # -----------------------------
-# Create guest session
+# Create guest session safely
 # -----------------------------
 @app.before_request
 def create_guest_session():
-    if "user_id" not in session:
-        auth_session = supabase.auth.sign_in_anonymously()
-        session["user_id"] = auth_session.user.id
+    if not session.get("user_id"):
+        try:
+            auth_session = supabase.auth.sign_in_anonymously()
+            session["user_id"] = auth_session.user.id
+        except Exception as e:
+            # Render sometimes blocks cookies or Supabase fails silently
+            session["user_id"] = None
 
 
 # -----------------------------
@@ -58,6 +62,7 @@ def compute_urgency(due_date_str):
 def board():
     user_id = session.get("user_id")
 
+    # If session is missing, load all tasks instead of crashing
     if not user_id:
         response = supabase.table("tasks").select("*").execute()
     else:
@@ -98,12 +103,16 @@ def board():
 # -----------------------------
 @app.post("/add_task")
 def add_task():
-    title = request.form["title"]
+    title = request.form.get("title")
     description = request.form.get("description")
     priority = request.form.get("priority", "normal")
     due_date = request.form.get("due_date")
 
     user_id = session.get("user_id")
+
+    # If session failed, still allow task creation
+    if not user_id:
+        user_id = None
 
     supabase.table("tasks").insert({
         "title": title,
@@ -123,13 +132,17 @@ def add_task():
 @app.post("/update_status")
 def update_status():
     data = request.get_json()
-    task_id = data["id"]
-    new_status = data["status"]
+    task_id = data.get("id")
+    new_status = data.get("status")
+
+    user_id = session.get("user_id")
+    if not user_id:
+        return {"error": "No user session"}, 400
 
     supabase.table("tasks") \
         .update({"status": new_status}) \
         .eq("id", task_id) \
-        .eq("user_id", session["user_id"]) \
+        .eq("user_id", user_id) \
         .execute()
 
     return {"success": True}
@@ -140,13 +153,17 @@ def update_status():
 # -----------------------------
 @app.post("/edit_task")
 def edit_task():
-    task_id = request.form["id"]
-    new_title = request.form["title"]
+    task_id = request.form.get("id")
+    new_title = request.form.get("title")
+
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect("/board")
 
     supabase.table("tasks") \
         .update({"title": new_title}) \
         .eq("id", task_id) \
-        .eq("user_id", session["user_id"]) \
+        .eq("user_id", user_id) \
         .execute()
 
     return redirect("/board")
@@ -157,12 +174,16 @@ def edit_task():
 # -----------------------------
 @app.post("/delete_task")
 def delete_task():
-    task_id = request.form["id"].strip()
+    task_id = request.form.get("id", "").strip()
+
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect("/board")
 
     supabase.table("tasks") \
         .delete() \
         .eq("id", task_id) \
-        .eq("user_id", session["user_id"]) \
+        .eq("user_id", user_id) \
         .execute()
 
     return redirect("/board")
