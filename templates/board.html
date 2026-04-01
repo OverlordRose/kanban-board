@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kanban Board</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1 class="board-title">Kanban Board</h1>
+
+<div class="board-header">
+    <div class="search-container">
+        <input 
+            type="text" 
+            id="taskSearch" 
+            placeholder="Search tasks..."
+            oninput="filterTasks()"
+        >
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">Total: {{ stats.total }}</div>
+        <div class="stat-item">Completed: {{ stats.completed }}</div>
+        <div class="stat-item">Overdue: {{ stats.overdue }}</div>
+        <div class="stat-item">Due Soon: {{ stats.due_soon }}</div>
+    </div>
+</div>
+
+
+<div class="board">
+    <div class="column" id="todo" data-status="todo"
+         ondragover="allowDrop(event)"
+         ondrop="dropTask(event)">
+        <h2>To Do</h2>
+
+        {% for task in tasks.todo %}
+            <div class="task-card" draggable="true" data-id="{{ task.id }}">
+                <div class="task-header">
+                    <span class="task-title">{{ task.title }}</span>
+
+                    {% if task.priority %}
+                        <span class="priority-badge {{ task.priority }}">
+                            {{ task.priority }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if task.description %}
+                    <p class="task-desc">{{ task.description }}</p>
+                {% endif %}
+
+                {% if task.urgency == "overdue" %}
+                    <span class="due-badge due-overdue">Overdue</span>
+                {% elif task.urgency == "today" %}
+                    <span class="due-badge due-today">Due Today</span>
+                {% elif task.urgency == "soon" %}
+                    <span class="due-badge due-soon">Due Soon</span>
+                {% endif %}
+
+                <div class="task-actions">
+                    <button class="edit-btn" data-id="{{ task.id }}">Edit</button>
+                    <button class="delete-btn" data-id="{{ task.id }}">Delete</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="column" id="in_progress" data-status="in_progress"
+         ondragover="allowDrop(event)"
+         ondrop="dropTask(event)">
+        <h2>In Progress</h2>
+
+        {% for task in tasks.in_progress %}
+            <div class="task-card" draggable="true" data-id="{{ task.id }}">
+                <div class="task-header">
+                    <span class="task-title">{{ task.title }}</span>
+
+                    {% if task.priority %}
+                        <span class="priority-badge {{ task.priority }}">
+                            {{ task.priority }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if task.description %}
+                    <p class="task-desc">{{ task.description }}</p>
+                {% endif %}
+
+                {% if task.urgency == "overdue" %}
+                    <span class="due-badge due-overdue">Overdue</span>
+                {% elif task.urgency == "today" %}
+                    <span class="due-badge due-today">Due Today</span>
+                {% elif task.urgency == "soon" %}
+                    <span class="due-badge due-soon">Due Soon</span>
+                {% endif %}
+
+                <div class="task-actions">
+                    <button class="edit-btn" data-id="{{ task.id }}">Edit</button>
+                    <button class="delete-btn" data-id="{{ task.id }}">Delete</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>  
+
+    <div class="column" id="in_review" data-status="in_review"
+         ondragover="allowDrop(event)"
+         ondrop="dropTask(event)">
+        <h2>In Review</h2>
+
+        {% for task in tasks.in_review %}
+            <div class="task-card" draggable="true" data-id="{{ task.id }}">
+                <div class="task-header">
+                    <span class="task-title">{{ task.title }}</span>
+
+                    {% if task.priority %}
+                        <span class="priority-badge {{ task.priority }}">
+                            {{ task.priority }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if task.description %}
+                    <p class="task-desc">{{ task.description }}</p>
+                {% endif %}
+
+                {% if task.urgency == "overdue" %}
+                    <span class="due-badge due-overdue">Overdue</span>
+                {% elif task.urgency == "today" %}
+                    <span class="due-badge due-today">Due Today</span>
+                {% elif task.urgency == "soon" %}
+                    <span class="due-badge due-soon">Due Soon</span>
+                {% endif %}
+
+                <div class="task-actions">
+                    <button class="edit-btn" data-id="{{ task.id }}">Edit</button>
+                    <button class="delete-btn" data-id="{{ task.id }}">Delete</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="column" id="done" data-status="done"
+         ondragover="allowDrop(event)"
+         ondrop="dropTask(event)">
+        <h2>Done</h2>
+        {% for task in tasks.done %}
+            <div class="task-card" draggable="true" data-id="{{ task.id }}">
+                <div class="task-header">
+                    <span class="task-title">{{ task.title }}</span>
+
+                    {% if task.priority %}
+                        <span class="priority-badge {{ task.priority }}">
+                            {{ task.priority }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                {% if task.description %}
+                    <p class="task-desc">{{ task.description }}</p>
+                {% endif %}
+
+                {% if task.urgency == "overdue" %}
+                    <span class="due-badge due-overdue">Overdue</span>
+                {% elif task.urgency == "today" %}
+                    <span class="due-badge due-today">Due Today</span>
+                {% elif task.urgency == "soon" %}
+                    <span class="due-badge due-soon">Due Soon</span>
+                {% endif %}
+
+                <div class="task-actions">
+                    <button class="edit-btn" data-id="{{ task.id }}">Edit</button>
+                    <button class="delete-btn" data-id="{{ task.id }}">Delete</button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+<!--hidden form for editing-->
+<div id="editModal" style="display:none;">
+    <form id="editForm" action="/edit_task" method="POST">
+        <input type="hidden" name="id" id="edit-id">
+        <input type="text" name="title" id="edit-title" placeholder="Task title" required>
+        <button type="submit">Update Task</button>
+    </form>
+</div>
+
+<!--delete form-->
+<form id="deleteForm" action="/delete_task" method="POST" style="display:none;">
+    <input type="hidden" name="id" id="delete-id">
+</form>
+
+<!--add task form-->
+<form class="add-task-form" method="POST" action="/add_task">
+    <input type="text" name="title" placeholder="Task title" required>
+
+    <textarea name="description" placeholder="Description (optional)"></textarea>
+
+    <label for="priority">Priority:</label>
+    <select name="priority" id="priority">
+        <option value="low">Low</option>
+        <option value="normal" selected>Normal</option>
+        <option value="high">High</option>
+    </select>
+
+    <input type="date" name="due_date">
+
+    <button type="submit">Add Task</button>
+</form>
+
+
+
+
+<!-- drag and drop JavaScript -->
+<script>
+let draggedTaskId = null;
+
+document.addEventListener('dragstart', function(event) {
+    if (event.target.classList.contains('task-card')) {
+        draggedTaskId = event.target.dataset.id;
+    }
+});
+
+function allowDrop(event) {
+    event.preventDefault();
+}
+
+function dropTask(event) {
+    event.preventDefault();
+
+    // Always get the column div, even if the user drops on the text
+    const column = event.currentTarget;
+    const newStatus = column.dataset.status;
+
+    //loading state while updating
+    document.body.classList.add("loading");
+
+    fetch("/update_status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: draggedTaskId, status: newStatus })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("Task status updated:", data);
+        location.reload();
+    })
+    .catch(err => {
+        console.error("Error updating task status:", err);
+        alert("Failed to update task status. Please try again.");
+        document.body.classList.remove("loading");
+    });
+}
+</script>
+
+<!--edit model logic for editing tasks-->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent triggering drag
+            const taskId = this.dataset.id;
+            const taskCard = this.closest('.task-card');
+            const taskTitle = taskCard.querySelector('span').textContent;
+
+
+            document.getElementById('edit-id').value = taskId;
+            document.getElementById('edit-title').value = taskTitle;
+            document.getElementById('editModal').style.display = 'block';
+        });
+    });
+
+                 //DELETE BUTTON LOGIC
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function(event) {
+                event.stopPropagation(); // Prevent triggering drag
+            const taskId = this.dataset.id;
+
+            // Fill hidden form
+            document.getElementById('delete-id').value = taskId;
+
+            // Submit delete form
+            document.getElementById('deleteForm').submit();
+        });
+    });
+});
+
+function filterTasks() {
+    const query = document.getElementById("taskSearch").value.toLowerCase();
+    const cards = document.querySelectorAll(".task-card");
+
+    cards.forEach(card => {
+        const title = card.querySelector(".task-title").textContent.toLowerCase();
+
+        if (title.includes(query)) {
+            card.style.display = "block";
+        } else {
+            card.style.display = "none";
+        }
+    });
+}
+
+</script>
+</body>
+</html>
