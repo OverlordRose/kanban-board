@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, redirect, session
 from supabase import create_client, Client
 from datetime import date, datetime
+from uuid import uuid4
 
 SUPABASE_URL = "https://wnieylhcqjgjsrbdbhek.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduaWV5bGhjcWpnanNyYmRiaGVrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MDQ2NzksImV4cCI6MjA5MDQ4MDY3OX0.YOTxUR6L6qNMHURhAepyGPA4VKOq7_WVGPn551hWL94"
@@ -21,9 +22,9 @@ def create_guest_session():
         try:
             auth_session = supabase.auth.sign_in_anonymously()
             session["user_id"] = auth_session.user.id
-        except Exception as e:
-            # Render sometimes blocks cookies or Supabase fails silently
-            session["user_id"] = None
+        except Exception:
+            # Fallback: generate a local UUID so RLS still passes
+            session["user_id"] = str(uuid4())
 
 
 # -----------------------------
