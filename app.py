@@ -112,6 +112,8 @@ def board():
 # -----------------------------
 @app.post("/add_task")
 def add_task():
+    supabase.auth.refresh_session()
+
     title = request.form.get("title")
     description = request.form.get("description")
     priority = request.form.get("priority", "normal")
