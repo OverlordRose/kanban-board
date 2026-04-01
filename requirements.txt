@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 flask
 supabase
 python-dotenv
+=======
+flask
+supabase
+python-dotenv
+>>>>>>> ab99b70359aa4ff72642b9c6000a9356541eac4e
 gunicorn
