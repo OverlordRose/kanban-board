@@ -179,20 +179,31 @@
 
 
 <!--hidden form for editing-->
-<form action="/edit_task" method="post">
-    <input type="hidden" name="id" id="edit-id">
+<!-- Edit Task Modal -->
+<div id="editModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h2>Edit Task</h2>
 
-    <label>Title</label>
-    <input type="text" name="title" id="edit-title" required>
+        <form id="editForm" action="/edit_task" method="POST">
+            <input type="hidden" name="id" id="edit-id">
 
-    <label>Description</label>
-    <textarea name="description" id="edit-description"></textarea>
+            <label>Title</label>
+            <input type="text" name="title" id="edit-title" required>
 
-    <label>Due Date</label>
-    <input type="date" name="due_date" id="edit-due-date">
+            <label>Description</label>
+            <textarea name="description" id="edit-description"></textarea>
 
-    <button type="submit">Update Task</button>
-</form>
+            <label>Due Date</label>
+            <input type="date" name="due_date" id="edit-due-date">
+
+            <div class="modal-buttons">
+                <button type="submit">Save Changes</button>
+                <button type="button" id="closeEditModal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 
 <!--delete form-->
@@ -268,48 +279,44 @@ function dropTask(event) {
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', function(event) {
-            event.stopPropagation(); // Prevent triggering drag
+            event.stopPropagation();
 
-            const taskId = this.dataset.id;
             const taskCard = this.closest('.task-card');
 
-            // Title
+            const taskId = this.dataset.id;
             const taskTitle = taskCard.querySelector('.task-title').textContent;
-
-            // Description (may not exist)
             const taskDescription = taskCard.querySelector('.task-desc')
                 ? taskCard.querySelector('.task-desc').textContent
                 : "";
-
-            // Due date (stored in data attribute)
             const taskDueDate = taskCard.dataset.dueDate || "";
 
-            // Fill the edit form
             document.getElementById('edit-id').value = taskId;
             document.getElementById('edit-title').value = taskTitle;
             document.getElementById('edit-description').value = taskDescription;
             document.getElementById('edit-due-date').value = taskDueDate;
 
-            // Show the edit form or modal
-            document.getElementById('editModal').style.display = 'block';
+            document.getElementById('editModal').style.display = 'flex';
         });
     });
+
+    document.getElementById('closeEditModal').addEventListener('click', () => {
+        document.getElementById('editModal').style.display = 'none';
+    });
 });
+
 
                  //DELETE BUTTON LOGIC
     document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function(event) {
-                event.stopPropagation(); // Prevent triggering drag
-            const taskId = this.dataset.id;
+    button.addEventListener('click', function(event) {
+        event.stopPropagation();
 
-            // Fill hidden form
-            document.getElementById('delete-id').value = taskId;
+        const taskId = this.dataset.id;
+        document.getElementById('delete-id').value = taskId;
 
-            // Submit delete form
-            document.getElementById('deleteForm').submit();
-        });
+        document.getElementById('deleteForm').submit();
     });
 });
+
 
 function filterTasks() {
     const query = document.getElementById("taskSearch").value.toLowerCase();
