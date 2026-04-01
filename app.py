@@ -66,13 +66,11 @@ def compute_urgency(due_date_str):
 # -----------------------------
 @app.route("/board")
 def board():
-    # Get the authenticated Supabase user
-    user = supabase.auth.get_user()
-    if not user or not user.user:
-        print("ERROR: No Supabase user authenticated")
+    # Get the user_id from the Flask session
+    user_id = session.get("user_id")
+    if not user_id:
+        print("ERROR: No session user_id")
         return redirect("/login")
-
-    user_id = user.user.id
 
     # Fetch only this user's tasks (RLS requires this)
     response = (
@@ -112,29 +110,16 @@ def board():
 # -----------------------------
 @app.post("/add_task")
 def add_task():
-    supabase.auth.refresh_session()
-    print("USER ON POST:", supabase.auth.get_user())
-
     title = request.form.get("title")
     description = request.form.get("description")
     priority = request.form.get("priority", "normal")
     due_date = request.form.get("due_date") or None
 
-    user = supabase.auth.get_user()
-    if not user or not user.user:
-        print("ERROR: No supabase user authenticated")
+    user_id = session.get("user_id")
+    if not user_id:
+        print("ERROR: No session user_id")
         return redirect("/login")
     
-    user_id = user.user.id
-
-    print("INSERT PAYLOAD:", {
-    "title": title,
-    "description": description,
-    "status": "todo",
-    "priority": priority,
-    "due_date": due_date,
-    "user_id": user_id
-})
 
     supabase.table("tasks").insert({
         "title": title,
@@ -157,12 +142,10 @@ def update_status():
     task_id = data.get("id")
     new_status = data.get("status")
 
-    # Get Supabase authenticated user
-    user = supabase.auth.get_user()
-    if not user or not user.user:
-        return {"error": "No Supabase user authenticated"}, 400
-
-    user_id = user.user.id
+    # Get user_id from Flask session
+    user_id = session.get("user_id")
+    if not user_id:
+        return {"error": "No session user_id"}, 400
 
     # Update only if the task belongs to this user (RLS requirement)
     supabase.table("tasks") \
@@ -182,13 +165,11 @@ def edit_task():
     task_id = request.form.get("id")
     new_title = request.form.get("title")
 
-    # Get Supabase authenticated user
-    user = supabase.auth.get_user()
-    if not user or not user.user:
-        print("ERROR: No Supabase user authenticated")
+    # Get user_id from Flask session
+    user_id = session.get("user_id")
+    if not user_id:
+        print("ERROR: No session user_id")
         return redirect("/login")
-
-    user_id = user.user.id
 
     # Update only if the task belongs to this user (RLS requirement)
     supabase.table("tasks") \
@@ -222,7 +203,6 @@ def delete_task():
         .execute()
 
     return redirect("/board")
-
 
 # -----------------------------
 # Run app
