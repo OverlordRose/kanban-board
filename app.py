@@ -185,13 +185,10 @@ def edit_task():
 def delete_task():
     task_id = request.form.get("id", "").strip()
 
-    # Get Supabase authenticated user
-    user = supabase.auth.get_user()
-    if not user or not user.user:
-        print("ERROR: No Supabase user authenticated")
+    user_id = session.get("user_id")
+    if not user_id:
+        print("ERROR: No session user_id")
         return redirect("/login")
-
-    user_id = user.user.id
 
     # Delete only if the task belongs to this user (RLS requirement)
     supabase.table("tasks") \
