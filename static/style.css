@@ -856,33 +856,136 @@ form[action="/add_task"] select {
     white-space: nowrap;
 }
 
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
+/* Modal backdrop */
+#editModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none; /* toggled by JS */
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* Modal container */
+.edit-modal-content {
+  background: #f7f7f9; /* soft grey to match your palette */
+  padding: 1.75rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  animation: fadeIn 0.25s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Header */
+.edit-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.edit-modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Close button */
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #555;
+}
+
+/* Inputs */
+.edit-modal-content input,
+.edit-modal-content textarea,
+.edit-modal-content select {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* Save button */
+.save-btn {
+  background: #4a6cf7;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #3a59d6;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .board {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .column {
     width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-size: 1.1rem;  
+    padding: 0.75rem 1rem;  
+    border-radius: 8px;     
+  }
+
+  button {
+    width: 100%;            
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .edit-modal-content {
+    padding: 1.25rem;
+    width: 92%;
+    max-width: none;
+  }
+
+  .edit-modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .save-btn {
+    font-size: 1.05rem;
+    padding: 0.85rem;
+  }
 }
 
-.modal-content {
-    background: white;
-    padding: 20px;
-    width: 350px;
-    border-radius: 8px;
+
+body {
+  overflow-x: hidden;
 }
 
-.modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-}
-
-#editForm label {
-    display: block;
-    margin-top: 10px;
-}

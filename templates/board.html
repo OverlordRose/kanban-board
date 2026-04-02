@@ -3,6 +3,7 @@
 <head>
     <title>Kanban Board</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -180,28 +181,23 @@
 
 <!--hidden form for editing-->
 <!-- Edit Task Modal -->
-<div id="editModal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <h2>Edit Task</h2>
-
-        <form id="editForm" action="/edit_task" method="POST">
-            <input type="hidden" name="id" id="edit-id">
-
-            <label>Title</label>
-            <input type="text" name="title" id="edit-title" required>
-
-            <label>Description</label>
-            <textarea name="description" id="edit-description"></textarea>
-
-            <label>Due Date</label>
-            <input type="date" name="due_date" id="edit-due-date">
-
-            <div class="modal-buttons">
-                <button type="submit">Save Changes</button>
-                <button type="button" id="closeEditModal">Cancel</button>
-            </div>
-        </form>
+<div id="editModal">
+  <div class="edit-modal-content">
+    <div class="edit-modal-header">
+      <h2>Edit Task</h2>
+      <button id="closeEditModal" class="close-btn">×</button>
     </div>
+
+    <form id="editForm">
+      <input type="text" id="editTitle" name="title" placeholder="Task title">
+
+      <textarea id="editDescription" name="description" rows="4" placeholder="Description"></textarea>
+
+      <input type="date" id="editDueDate" name="due_date">
+
+      <button type="submit" class="save-btn">Save Changes</button>
+    </form>
+  </div>
 </div>
 
 
