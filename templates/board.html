@@ -212,22 +212,24 @@
 </form>
 
 <!--add task form-->
-<form class="add-task-form" method="POST" action="/add_task">
-    <input type="text" name="title" placeholder="Task title" required>
+<div class="add-task-form">
+    <form method="POST" action="/add_task">
+        <input type="text" name="title" placeholder="Task title" required>
 
-    <textarea name="description" placeholder="Description (optional)"></textarea>
+        <textarea name="description" placeholder="Description (optional)"></textarea>
 
-    <label for="priority">Priority:</label>
-    <select name="priority" id="priority">
-        <option value="low">Low</option>
-        <option value="normal" selected>Normal</option>
-        <option value="high">High</option>
-    </select>
+        <label for="priority">Priority:</label>
+        <select name="priority" id="priority">
+            <option value="low">Low</option>
+            <option value="normal" selected>Normal</option>
+            <option value="high">High</option>
+        </select>
 
-    <input type="date" name="due_date">
+        <input type="date" name="due_date">
 
-    <button type="submit">Add Task</button>
-</form>
+        <button type="submit">Add Task</button>
+    </form>
+</div>
 
 
 
