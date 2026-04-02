@@ -189,17 +189,21 @@
     </div>
 
     <form id="editForm">
-      <input type="text" id="editTitle" name="title" placeholder="Task title">
+      <input type="hidden" id="edit-id" name="id">
 
-      <textarea id="editDescription" name="description" rows="4" placeholder="Description"></textarea>
+      <label>Title</label>
+      <input type="text" id="edit-title" name="title" placeholder="Task title">
 
-      <input type="date" id="editDueDate" name="due_date">
+      <label>Description</label>
+      <textarea id="edit-description" name="description" rows="4" placeholder="Description"></textarea>
+
+      <label>Due Date</label>
+      <input type="date" id="edit-due-date" name="due_date">
 
       <button type="submit" class="save-btn">Save Changes</button>
     </form>
   </div>
 </div>
-
 
 
 <!--delete form-->
