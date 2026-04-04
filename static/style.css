@@ -235,6 +235,34 @@ body {
     border-radius: 8px;
 }
 
+/*Urgency badge styles*/
+.due-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* Overdue = red */
+.due-overdue {
+    background-color: #ef5350;
+    color: white;
+}
+
+/* Due Today = orange */
+.due-today {
+    background-color: #ff9800;
+    color: white;
+}
+
+/* Due Soon = yellow */
+.due-soon {
+    background-color: #ffd54f;
+    color: #333;
+}
+
 /* --- Mobile Layout --- */
 @media (max-width: 600px) {
 
