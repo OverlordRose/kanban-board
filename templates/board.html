@@ -36,9 +36,10 @@
         <h2>To Do</h2>
 
         {% for task in tasks.todo %}
-            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-due-date="{{ task.due_date }}">
+            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-description="{{ task.description }}" data-due-date="{{ task.due_date }}">
                 <div class="task-header">
                     <span class="task-title">{{ task.title }}</span>
+
 
                     {% if task.priority %}
                         <span class="priority-badge {{ task.priority }}">
@@ -73,10 +74,10 @@
         <h2>In Progress</h2>
 
         {% for task in tasks.in_progress %}
-            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-due-date="{{ task.due_date }}">
+            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-description="{{ task.description }}" data-due-date="{{ task.due_date }}">
                 <div class="task-header">
                     <span class="task-title">{{ task.title }}</span>
-
+                    
                     {% if task.priority %}
                         <span class="priority-badge {{ task.priority }}">
                             {{ task.priority }}
@@ -110,7 +111,7 @@
         <h2>In Review</h2>
 
         {% for task in tasks.in_review %}
-            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-due-date="{{ task.due_date }}">
+            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-description="{{ task.description }}" data-due-date="{{ task.due_date }}">
                 <div class="task-header">
                     <span class="task-title">{{ task.title }}</span>
 
@@ -146,7 +147,7 @@
          ondrop="dropTask(event)">
         <h2>Done</h2>
         {% for task in tasks.done %}
-            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-due-date="{{ task.due_date }}">
+            <div class="task-card" draggable="true" data-id="{{ task.id }}" data-description="{{ task.description }}" data-due-date="{{ task.due_date }}">
                 <div class="task-header">
                     <span class="task-title">{{ task.title }}</span>
 
@@ -188,7 +189,8 @@
       <button id="closeEditModal" class="close-btn">×</button>
     </div>
 
-    <form id="editForm">
+    <form id="editForm" method="POST" action="/edit_task">
+
       <input type="hidden" id="edit-id" name="id">
 
       <label>Title</label>
@@ -285,11 +287,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const taskCard = this.closest('.task-card');
 
-            const taskId = this.dataset.id;
-            const taskTitle = taskCard.querySelector('.task-title').textContent;
-            const taskDescription = taskCard.querySelector('.task-desc')
-                ? taskCard.querySelector('.task-desc').textContent
-                : "";
+            const taskId = taskCard.dataset.id;
+            const taskTitle = taskCard.querySelector('.task-title').textContent.trim();
+            const taskDescription = taskCard.dataset.description || "";
             const taskDueDate = taskCard.dataset.dueDate || "";
 
             document.getElementById('edit-id').value = taskId;
